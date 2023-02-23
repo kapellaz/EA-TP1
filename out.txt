@@ -5,7 +5,9 @@ VALID: 1 QR Code generated!
 |  # |
 |   #|
 +----+
+2749
 INVALID: 2 QR Codes generated!
+195
 VALID: 1 QR Code generated!
 +----+
 |# ##|
@@ -13,6 +15,7 @@ VALID: 1 QR Code generated!
 |  # |
 | # #|
 +----+
+2523
 VALID: 1 QR Code generated!
 +-----+
 |# # #|
@@ -21,11 +24,15 @@ VALID: 1 QR Code generated!
 | #   |
 |#  ##|
 +-----+
+29321
 VALID: 1 QR Code generated!
 +---+
 |#  |
 |   |
 |  #|
 +---+
+55
 INVALID: 2 QR Codes generated!
+195
 DEFECT: No QR Code generated!
+499

@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -124,6 +125,26 @@ int verificaDiagonais(vector<vector<int>>& vec, int nLinha){
 }
 
 */
+
+void printValid(vector<vector<int>>& vec){
+    cout << "VALID: 1 QR Code generated!" << endl;
+    cout << "+";
+    for(int i = 0; i<vec.size(); i++) cout << "-";
+    cout << "+" << endl;
+    for(int i = 0; i<vec.size();i++){
+        cout << "|";
+        for(int j = 0; j<vec.size();j++){
+            if(vec[i][j]==1) cout << "#";
+            else cout << " ";
+        }
+        cout << "|" << endl;
+    }
+    cout << "+";
+    for(int i = 0; i<vec.size(); i++) cout << "-";
+    cout << "+" << endl;
+}
+
+
 int verificaUntil(vector<vector<int>>& vec, int nLinha, int nColuna){
     int conta1 = 0;
     int conta2 = 0;
@@ -154,47 +175,11 @@ int verificaUntil(vector<vector<int>>& vec, int nLinha, int nColuna){
         }
         conta=0;
     }
-    if(conta1 > db[0]) return 0;
-    if(conta2 > db[1]) return 0;
-    if(nLinha==v) if(q1 != qb[0] || q2 != qb[1]) return 0;
-    if(q1 > qb[0] || q2 > qb[1] || q3 > qb[2] || q4 > qb[3]) return 0;
+    
     return 1;
 }
 
 
-int verificaUntil2(vector<vector<int>>& vec, int nLinha, int nColuna){
-    int conta1 = 0;
-    int conta2 = 0;
-    int q1=0,q2=0,q3=0,q4=0;
-    int conta = 0;
-    int estadoAtual;
-    int s = vec.size();
-    int v = floor(s/2);
-
-    for(int i = 0; i<nLinha; i++){
-        estadoAtual=vec[0][i];
-        if(vec[i][i]==1) conta1++;
-        if(vec[i][s-i-1]==1) conta2++;
-        for(int j = 0; j<nColuna; j++){
-            if(vec[i][j]==1){
-                if(i+1<=floor(s/2) && j+1 > floor(s/2)) q1++;
-                if(i+1<=floor(s/2) && j +1<= floor(s/2)) q2++;
-                if(i+1>floor(s/2) && j+1 <= floor(s/2)) q3++;
-                if(i+1>floor(s/2) && j+1 > floor(s/2)) q4++;
-            }
-        }
-        if(conta > ct[i]){
-            return 0;
-        }
-        conta=0;
-    }
-    if(conta1 > db[0]) return 0;
-    if(conta2 > db[1]) return 0;
-    if(q1 > qb[0] || q2 > qb[1] || q3 > qb[2] || q4 > qb[3]){
-        return 0;
-    }
-    return 1;
-}
 
 
 
@@ -202,18 +187,19 @@ int verifica(vector<vector<int>>& vec){
     int conta1 = 0;
     int conta2 = 0;
     int q1=0,q2=0,q3=0,q4=0;
-    int conta = 0;
-    int estadoAtual;
+    int contaColuna = 0;
+    int estadoAtualColuna;
     int s = vec.size();
+    int v = floor(s/2);
 
     for(int i = 0; i<n; i++){
-        estadoAtual=vec[0][i];
+        estadoAtualColuna=vec[0][i];
         if(vec[i][i]==1) conta1++;
         if(vec[i][s-i-1]==1) conta2++;
         for(int j = 0; j<n; j++){
-            if((j+1<n) && vec[j+1][i]!=estadoAtual){
-                conta+=1;
-                estadoAtual=vec[j+1][i];
+            if((j+1<n) && vec[j+1][i]!=estadoAtualColuna){
+                contaColuna+=1;
+                estadoAtualColuna=vec[j+1][i];
             }
             if(vec[i][j]==1){
                 if(i+1<=floor(s/2) && j+1 > floor(s/2)) q1++;
@@ -222,79 +208,66 @@ int verifica(vector<vector<int>>& vec){
                 if(i+1>floor(s/2) && j+1 > floor(s/2)) q4++;
             }
         }
-        if(conta != ct[i]){
+        if(contaColuna != ct[i]){
             return 0;
         }
-        conta=0;
+        contaColuna=0;
     }
     if(conta1 != db[0]) return 0;
     if(conta2 != db[1]) return 0;
     if(q1 != qb[0] || q2 != qb[1] || q3 != qb[2] || q4 != qb[3]) return 0;
+    //cout << conta1 << " " << conta2 << endl;
+    //cout << q1 << " " << q2 << " " << q3 << " " << q4 << endl << endl;
     return 1;
 }
 
 
-void generateCombinations(int x, int n, vector<int>& combination, vector<vector<int>>& vec,int i, int nLinha) {
+void generateCombinations(int n, vector<vector<int>>& vec,int linha, int coluna) {
     contador++;
-    if (i == n) {
-        if(calculaTransicoesLinha(n,combination)==lt[nLinha-1]){
-            vec[nLinha-1]=combination;
-            vector<int> combination1(n);
-            if(nLinha<n){
-                if(verificaUntil(vec, nLinha,n)==1){
-                    generateCombinations(lb[nLinha],n,combination1,vec,0,nLinha+1);
-                }
+    int x = linha-1;
+    int y = coluna-1;
+
+    vec[x][y] = 0;
+    //cout << linha << " " << coluna << endl;
+    vector<int> aux(n);
+    aux = vec[x];
+    if(calculaTransicoesLinha(coluna,aux)<=lt[x]){
+        if(coluna==n && linha!=n) {
+            if(calculaTransicoesLinha(coluna,aux)==lt[x] && verificaUntil(vec,linha, coluna)==1){
+                generateCombinations(n,vec,linha+1,1);
             }
-            //if(nLinha==n && calculaTransicoesColuna(vec)==1 && contaQuadrantes(vec)==1
-            //&& verificaDiagonais(vec)==1){
-            if(nLinha==n && verifica(vec)==1){
+        }
+        else if(linha==n && coluna == n){
+            if(verifica(vec)==1){
                 possiveis++;
-                vecaux=vec;
+                vecaux = vec;
+            }
+            
+        }
+        else generateCombinations(n,vec,linha,coluna+1);
+    }
+
+    vec[x][y] = 1;
+       
+    aux = vec[x];
+    if(calculaTransicoesLinha(coluna,aux)<=lt[x]){
+        if(coluna==n && linha!=n) {
+            if(calculaTransicoesLinha(coluna,aux)==lt[x] && verificaUntil(vec,linha, coluna)==1){
+                generateCombinations(n,vec,linha+1,1);
             }
         }
-        return;
-    }
-    if(calculaTransicoesLinha(i+1,combination)>lt[nLinha-1]){
-        return;
-    }else{
-        vector<vector<int>> vecx;
-        vecx = vec;
-        vecx[nLinha-1]=combination;
-        if(nLinha < n && verificaUntil2(vecx, nLinha, i)!=1){
-            return;
+        else if(linha==n && coluna == n){
+            if(verifica(vec)==1){
+                possiveis++;
+                vecaux = vec;
+            }
+            
         }
-    }
-    // Caso o elemento i seja 1, adiciona-o na matriz e decrementa o valor de x
-    if (x > 0) {
-        combination[i] = 1;
-        generateCombinations(x-1, n, combination,vec, i+1,nLinha);
+        else generateCombinations(n,vec,linha,coluna+1);
     }
     
-    // Caso o elemento i seja 0, adiciona-o na matriz e não decrementa o valor de x
-    if (n-i > x) {
-        combination[i] = 0;
-        generateCombinations(x, n, combination,vec, i+1,nLinha);
-    }
-    return;
 }
 
-void printValid(vector<vector<int>>& vec){
-    cout << "VALID: 1 QR Code generated!" << endl;
-    cout << "+";
-    for(int i = 0; i<vec.size(); i++) cout << "-";
-    cout << "+" << endl;
-    for(int i = 0; i<vec.size();i++){
-        cout << "|";
-        for(int j = 0; j<vec.size();j++){
-            if(vec[i][j]==1) cout << "#";
-            else cout << " ";
-        }
-        cout << "|" << endl;
-    }
-    cout << "+";
-    for(int i = 0; i<vec.size(); i++) cout << "-";
-    cout << "+" << endl;
-}
 
 int main(){
     ios_base::sync_with_stdio(0);
@@ -304,9 +277,9 @@ int main(){
     while(qrcodes--){
         
         if(!leitura())cout << "No QR Code generated!"<< endl;
-        vector<int> combination(n);
-        vector<vector<int>> vec(n);
-        generateCombinations(lb[0],n,combination,vec,0,1);
+        //cout << n << endl;
+        vector<vector<int>> vec( n , vector<int> (n));
+        generateCombinations(n, vec,1,1);
         if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
         else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
         else printValid(vecaux);
