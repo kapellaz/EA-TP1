@@ -234,50 +234,6 @@ int verifica(vector<vector<int>>& vec){
 }
 
 
-void generateCombinations(int x, int n, vector<int>& combination, vector<vector<int>>& vec,int i, int nLinha) {
-    contador++;
-    if (i == n) {
-        if(calculaTransicoesLinha(n,combination)==lt[nLinha-1]){
-            vec[nLinha-1]=combination;
-            vector<int> combination1(n);
-            if(nLinha<n){
-                if(verificaUntil(vec, nLinha,n)==1){
-                    generateCombinations(lb[nLinha],n,combination1,vec,0,nLinha+1);
-                }
-            }
-            //if(nLinha==n && calculaTransicoesColuna(vec)==1 && contaQuadrantes(vec)==1
-            //&& verificaDiagonais(vec)==1){
-            if(nLinha==n && verifica(vec)==1){
-                possiveis++;
-                vecaux=vec;
-            }
-        }
-        return;
-    }
-    if(calculaTransicoesLinha(i+1,combination)>lt[nLinha-1]){
-        return;
-    }else{
-        vector<vector<int>> vecx;
-        vecx = vec;
-        vecx[nLinha-1]=combination;
-        if(nLinha < n && verificaUntil2(vecx, nLinha, i)!=1){
-            return;
-        }
-    }
-    // Caso o elemento i seja 1, adiciona-o na matriz e decrementa o valor de x
-    if (x > 0) {
-        combination[i] = 1;
-        generateCombinations(x-1, n, combination,vec, i+1,nLinha);
-    }
-    
-    // Caso o elemento i seja 0, adiciona-o na matriz e não decrementa o valor de x
-    if (n-i > x) {
-        combination[i] = 0;
-        generateCombinations(x, n, combination,vec, i+1,nLinha);
-    }
-    return;
-}
-
 void printValid(vector<vector<int>>& vec){
     cout << "VALID: 1 QR Code generated!" << endl;
     cout << "+";
@@ -296,6 +252,74 @@ void printValid(vector<vector<int>>& vec){
     cout << "+" << endl;
 }
 
+
+
+int generateCombinations(vector<int>& combination, vector<vector<int>>& vec, int nLinha) {
+    if(calculaTransicoesLinha(n,combination)==lt[nLinha-1]){
+        vec[nLinha-1]=combination;
+        if(nLinha<n){
+            //if(verificaUntil(vec, nLinha,n)==1){
+             //   return 1;
+           // }
+        }
+        if(nLinha==n && verifica(vec)==1){
+                possiveis++;
+                vecaux=vec;
+                printValid(vec);
+                return 2;
+        }
+        //if(nLinha==n && calculaTransicoesColuna(vec)==1 && contaQuadrantes(vec)==1
+        //&& verificaDiagonais(vec)==1){
+    }
+    return -1;
+}
+int conta1=0;
+
+vector<int> combinationold;
+void geraLinhas(int x, int n, vector<int>& combination, vector<vector<int>>& vec,int i,int control, int nLinha){
+    contador++;
+    if(control==0){
+        if(x == 0){
+            vector<int> t(n,0);
+            combination=t;
+            i=n; 
+        }else control=1;
+        if(x == n){
+            vector<int> t(n,1);
+            combination=t;
+            i=n;
+        }else control=1;
+    }if(control==1){
+        if (i<n && x > 0) {
+            conta1++;
+            combination[i] = 1;
+            geraLinhas(x-1, n, combination, vec,i+1,1,nLinha);
+        }
+        if (i<n && n-i > x) {
+            combination[i] = 0;
+            geraLinhas(x, n, combination,vec,i+1,1, nLinha);
+        }
+    }
+    for(int i = 0; i<combination.size(); i++){
+        cout << combination[i] << " ";
+    }
+    cout << endl;  
+    if(calculaTransicoesLinha(n,combination)==lt[nLinha-1]){ 
+        vec[nLinha-1]= combination;
+        vector<int> combination1(n);
+        if(nLinha<n){
+            if(verificaUntil(vec, nLinha,n)==1){
+                cout << "bom "<< nLinha << endl; 
+                geraLinhas(lb[nLinha], n, combination1, vec,0, 0, nLinha+1);
+            }
+        }   
+    }
+    return;          
+}
+
+
+
+
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0);
@@ -306,7 +330,8 @@ int main(){
         if(!leitura())cout << "No QR Code generated!"<< endl;
         vector<int> combination(n);
         vector<vector<int>> vec(n);
-        generateCombinations(lb[0],n,combination,vec,0,1);
+        //generateCombinations(lb[0],n,combination,vec,0,1);
+        geraLinhas(lb[0], n, combination,vec, 0,0,1);
         if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
         else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
         else printValid(vecaux);
