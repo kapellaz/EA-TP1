@@ -47,6 +47,27 @@ bool leitura(){
 }
 
 
+bool detetaDefeitos(){
+    int contaPretoLinha = 0;
+    int contaPretoColuna = 0;
+    int contaPretoQuadrante = 0;
+    for(int i = 0; i<n; i++){
+        if(i<4) contaPretoQuadrante += qb[i];
+        contaPretoColuna += cb[i];
+        contaPretoLinha += lb[i];
+    }
+    if(n<4){
+        for(int i = n; i<4; i++) contaPretoQuadrante+=qb[i];
+    }
+    if(contaPretoColuna!=contaPretoLinha || contaPretoLinha != contaPretoQuadrante || db[0]>n || db[1] > n
+    || contaPretoColuna > n*n || contaPretoLinha > n*n || contaPretoQuadrante > n*n) {
+        //cout << contaPretoColuna << " " << contaPretoLinha << " " << contaPretoQuadrante << endl;
+        return true;
+    }
+    return false;
+}
+
+
 
 void printValid(vector<vector<int>>& vec){
     cout << "VALID: 1 QR Code generated!" << endl;
@@ -182,11 +203,20 @@ void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec);
 
 //gera uma linha inteira celula a celula
 void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas){
-    if(inicio == fim) buildMatrix(linha, combination, vec);
+    //if(!verificaUntil(vec,linha,n)==1) return;
+
+    if(x > 0 && x+inicio==n){
+        for(int i = inicio; i<combination.size(); i++) combination[i]=1;
+        inicio=fim;
+    }
     
+    if(inicio == fim){
+        buildMatrix(linha, combination, vec);
+        return;
+    }
+
     if (x > 0 && saldoColunas[inicio]>0) {
         combination[inicio] = 1;
-        
         saldoColunas[inicio]--;
         gerador(x-1, linha, inicio+1, fim, combination, vec, saldoColunas);
         saldoColunas[inicio]++;
@@ -256,16 +286,18 @@ int main(){
     int qrcodes;
     cin >> qrcodes;
     while(qrcodes--){
-        if(!leitura())cout << "No QR Code generated!"<< endl;
-        vector<int> combination(n);
-        vector<vector<int>> vec( n , vector<int> (n,0));
-        constroiLinhas(n, vec,1);
-        if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
-        else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
-        else printValid(vecaux);
-        possiveis=0;
-        //cout << contador << endl;
-        contador = 0;
+        if(!leitura() || detetaDefeitos())cout << "DEFECT: No QR Code generated!"<< endl;
+        else{
+            vector<int> combination(n);
+            vector<vector<int>> vec( n , vector<int> (n,0));
+            constroiLinhas(n, vec,1);
+            if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
+            else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
+            else printValid(vecaux);
+            possiveis=0;
+            //cout << contador << endl;
+            contador = 0;
+        }
     }
     return 0;
 }
