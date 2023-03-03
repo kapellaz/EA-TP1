@@ -229,10 +229,10 @@ int verifica(vector<vector<int>>& vec){
 
 
 
-void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas);
+void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas,vector<int> &marcado);
 
 //gera uma linha inteira celula a celula
-void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas){
+void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas,vector<int> &marcado){
     //if(!verificaUntil(vec,linha,n)==1) return;
 
 
@@ -244,7 +244,7 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
     }
     
     if(inicio == fim){
-        buildMatrix(linha, combination, vec,saldoColunas);
+        buildMatrix(linha, combination, vec,saldoColunas,marcado);
         return;
     }
     int calc = calculaTransicoesLinha(inicio, combination);
@@ -253,67 +253,75 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
     if (x > 0 && saldoColunas[inicio]>0) {
         combination[inicio] = 1;
         saldoColunas[inicio]--;
-        gerador(x-1, linha, inicio+1, fim, combination, vec, saldoColunas);
+        gerador(x-1, linha, inicio+1, fim, combination, vec, saldoColunas,marcado);
         saldoColunas[inicio]++;
     }
     
     if (n-inicio > x) {
         combination[inicio] = 0;
-        gerador(x, linha,  inicio+1, fim,  combination, vec, saldoColunas);
+        gerador(x, linha,  inicio+1, fim,  combination, vec, saldoColunas,marcado);
     }
 }
 
 //gera uma linha inteira
-void constroiLinhas(int n, vector<vector<int>>& vec,int linha,vector<int> &saldoColunas){
+void constroiLinhas(int n, vector<vector<int>>& vec,int linha,vector<int> &saldoColunas,vector<int> &marcado){
     vector<int> combination(n,0);
     contador++;
    
-
+   if(marcado[linha-1] != 1){
     if(lb[linha-1] == n){
-        //aqui++;
-        //cout<<aqui<<"tudo a um"<<endl;
         vector<int> t(n,1);
         combination=t;
-        buildMatrix(linha, combination, vec,saldoColunas);
+        marcado[linha-1]=1;
+        buildMatrix(linha, combination, vec,saldoColunas,marcado);
     }
     else if(lb[linha-1] == 0){
-        //aqui++;
-        //cout<<aqui<<endl;
         vector<int> t(n,0);
         combination=t;
-        buildMatrix(linha, combination, vec,saldoColunas);
+        marcado[linha-1]=1;
+        buildMatrix(linha, combination, vec,saldoColunas,marcado);
     }
     else if(lb[linha-1]==1 && lt[linha-1]%2 != 0){
         vector<int> t(n,0);
         combination=t;
         combination[0]=1;
         saldoColunas[0]--;
-        gerador(lb[linha-1]-1, linha, 1,n,combination, vec,saldoColunas);
+        gerador(lb[linha-1]-1, linha, 1,n,combination, vec,saldoColunas,marcado);
         combination[0]=0;
         saldoColunas[0]++;
         combination[n-1]=1;
         saldoColunas[n-1]--;
-        gerador(lb[linha-1]-1, linha, 0,n-1,combination, vec, saldoColunas);
+        gerador(lb[linha-1]-1, linha, 0,n-1,combination, vec, saldoColunas,marcado);
         saldoColunas[n-1]++;
     }else if(lt[linha-1]==1){
         vector<int> t(n,0);
         combination=t;
         for(int i = 0; i<lb[linha-1]; i++) combination[i]=1;
-        buildMatrix(linha, combination, vec,saldoColunas);
+        buildMatrix(linha, combination, vec,saldoColunas,marcado);
         combination=t;
         for(int i = combination.size()-lb[linha-1]; i<combination.size(); i++) combination[i]=1;
-        buildMatrix(linha, combination, vec,saldoColunas);
+        buildMatrix(linha, combination, vec,saldoColunas,marcado);
     }
     else {
-        gerador(lb[linha-1], linha, 0,n,combination, vec,saldoColunas);
+        gerador(lb[linha-1], linha, 0,n,combination, vec,saldoColunas,marcado);
     }
+   }
+   else{
+         if(linha==n && verifica(vec)==1){
+            possiveis++;
+            vecaux=vec;
+        }
+        if(linha<n){
+            constroiLinhas(n,vec,linha+1,saldoColunas,marcado);
+        }
+   }
 }
 
 //acrescenta a linha gerada à matriz e ve se nao da problemas
-void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas){
+void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas,vector<int> &marcado){
     if(calculaTransicoesLinha(n,combination)==lt[linha-1]){
         vec[linha-1]=combination;
-        if(linha<n && verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas);
+        if(linha<n && verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas,marcado);
         if(linha==n && verifica(vec)==1){
             possiveis++;
             vecaux=vec;
@@ -332,10 +340,11 @@ int main(){
         if(!leitura() || detetaDefeitos())cout << "DEFECT: No QR Code generated!"<< endl;
         else{
             vector<int> saldoColunas(n,0);
+            vector<int> marcado(n,-1);
             for(int i = 0; i<n; i++) saldoColunas[i] = cb[i];
             vector<int> combination(n);
-            vector<vector<int>> vect( n , vector<int> (n,0));
-            constroiLinhas(n, vect,1,saldoColunas);
+            vector<vector<int>> vect( n , vector<int> (n,-1));
+            constroiLinhas(n, vect,1,saldoColunas,marcado);
             //cout<<aqui<<endl;
             if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
             else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
