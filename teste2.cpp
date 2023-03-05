@@ -16,6 +16,11 @@ int aqui = 0;
 
 vector<vector<int>> vecaux;
 vector<vector<int>> vecaux2;
+
+
+void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<int> &saldoLinhas);
+
+
 bool leitura(){
         int i = 0;
         cin >> n;
@@ -77,12 +82,10 @@ bool detetaDefeitos(){
             }
         }
     }*/
-
     for(int i = 0; i<n; i++){
         if((lb[i]==n|| lb[i]==0) && lt[i]>0) return true;
         if((cb[i]==n|| cb[i]==0) && ct[i]>0) return true;
     }
-
 
     for(int i = 0; i<n; i++){
         if(i<4) contaPretoQuadrante += qb[i];
@@ -238,11 +241,11 @@ int verifica(vector<vector<int>>& vec){
 
 
 void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas,vector<int> &saldoLinhas);
-int cccc=0;
+
 //gera uma linha inteira celula a celula
 void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas,vector<int> &saldoLinhas){
     //if(!verificaUntil(vec,linha,n)==1) return;
-    cccc++;
+
     if(inicio == fim){
         buildMatrix(linha, combination, vec,saldoColunas,saldoLinhas);
         return;
@@ -260,8 +263,10 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
             if (x > 0 && saldoColunas[inicio]>0) {
                 combination[inicio] = 1;
                 saldoColunas[inicio]--;
+                saldoLinhas[linha-1]--;
                 gerador(x-1, linha, inicio+1, fim, combination, vec, saldoColunas,saldoLinhas);
                 saldoColunas[inicio]++;
+                saldoLinhas[linha-1]++;
             }
             
             if (n-inicio > x) {
@@ -271,17 +276,20 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
         }
     }
 }
-
+vector<vector<int>> vecaux3;
 //gera uma linha inteira
 void constroiLinhas(int n, vector<vector<int>>& vec,int linha,vector<int> &saldoColunas, vector<int> &saldoLinhas){
     vector<int> combination(n,0);
     contador++;
+    //printValid(vec);
     if(saldoLinhas[linha-1]==0 && linha!=n) {
         constroiLinhas(n, vec, linha+1, saldoColunas, saldoLinhas);
     }
     else if(saldoLinhas[linha-1]==0 && linha==n){
-        combination=vec[linha-1];
-        buildMatrix(n, combination, vec,saldoColunas, saldoLinhas);
+        if(linha==n && verifica(vec)==1){
+            possiveis++;
+            vecaux=vec;
+        }
     }
     else {
         //cout << linha << " merda" << endl;
@@ -295,42 +303,67 @@ void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vec
         vec[linha-1]=combination;
         if(linha<n && verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas, saldoLinhas);
         //if(linha == n) printValid(vec);
-        if(linha==n && verifica(vec)==1){
+        else if(linha==n && verifica(vec)==1){
+           // for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
+           // cout << endl;
+            //for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";  
+           // cout << endl; 
             possiveis++;
             vecaux=vec;
         }
     }
 }
 
-void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<int> &saldoLinhas){
+void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<int> &saldoLinhas,vector<int> &saldoDiag,vector<int> &saldoQuad){
     int k = n;
+    int y = n;
     int s = floor(n/2);
     int s_q1= s*(s+1);
     int s_q2=s*s;
     int s_q3=s*(s+1);
     int s_q4=(s+1)*(s+1);
-
+    vector<int> preto(n,1);
 
     for(int i = 0;i<n;i++){
+        if(lb[i]==1 && lt[i]==1){
+            for(int k = 1; k<n-1; k++) vec[i][k]=0;
+        }
+        if(lt[i]==2 && lb[i]==n-1) {
+            if(vec[i][0]==-1){
+                vec[i][0]=1;
+                saldoLinhas[i]-=1;
+                saldoColunas[0]--;
+            }
+            if(vec[i][n-1]==-1){
+                vec[i][n-1]=1;
+                saldoLinhas[i]-=1;
+                saldoColunas[n-1]--;
+            }
+        }
+        if(lt[i]==1 && lb[i]==n-1) {
+            vec[i]=preto;
+            vec[i][0]=-1;
+            vec[i][n-1]=-1;
+            for(int k = 1; k<n-1; k++){saldoColunas[k]--; saldoLinhas[i]--;}
+        }
         if(lb[i]== n){
             vector<int> black(n,1);
+            for(int y = 0;y<n;y++){
+                if(vec[i][y]==-1)
+                    saldoColunas[y]--;
+            }
             vec[i] = black;
             saldoLinhas[i] = 0;
-            for(int y = 0;y<n;y++){
-                    if(saldoColunas[y]!=0)
-                        saldoColunas[y]--;
-            }
-                vec[i] = black;
         }
         if(cb[i] == n)
         {   
-            saldoColunas[i] = 0;
             for(int x = 0;x<n;x++){
                     if(vec[x][i] == -1){
                         vec[x][i] = 1;
                         saldoLinhas[x]--;
                     }       
             }  
+            saldoColunas[i] = 0;
         }
         if(lb[i]==0){
                 k--;
@@ -339,8 +372,9 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
         }
 
         if(cb[i] == 0){
+                y--;
                 for(int z = 0;z<n;z++){
-                    if(vec[z][i] ==-1)
+                    if(vec[z][i] ==-1 )
                         vec[z][i] = 0;
             }
         }
@@ -349,12 +383,24 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
     for(int i = 0; i<n; i++){
         if(saldoColunas[i]==k){
             for(int j = 0; j<n; j++){
-                if(vec[j][i]==-1){
+                if(vec[j][i]==-1 && vec[j][i]!=1){
                     saldoLinhas[j]--;
                     vec[j][i]=1;
                 }
             }
-            saldoColunas[i]-=k;
+            saldoColunas[i]=0;
+        }
+    }
+
+    for(int i = 0; i<n; i++){
+        if(saldoLinhas[i]==y){
+            for(int j = 0; j<n; j++){
+                if(vec[i][j]==-1 && vec[i][j]!=1){
+                    saldoColunas[j]--;
+                    vec[i][j]=1;
+                }
+            }
+            saldoLinhas[i]=0;
         }
     }
 
@@ -362,7 +408,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
     if(s_q1 == qb[0] || s_q2 == qb[1] || s_q3 == qb[2] || s_q4 == qb[3] || db[0]==n || db[1]==n || db[0]==0 || db[1]==0 ){
         for(int i = 0; i<n; i++){
             if(db[0]==n){
-                if(vec[i][i]==-1) {
+                if(vec[i][i]==-1 && vec[i][i]!=1) {
                     vec[i][i]=1;
                     saldoColunas[i]--;
                     saldoLinhas[i]--;
@@ -374,7 +420,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 }
             }
             if(db[1]==n){
-                if(vec[i][n-i-1]==-1) {
+                if(vec[i][n-i-1]==-1 && vec[i][n-i-1]!=1) {
                     vec[i][n-i-1]=1;
                     saldoColunas[n-i-1]--;
                     saldoLinhas[i]--;
@@ -389,7 +435,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
             for(int j = 0; j<n; j++){
                 if(s_q1 == qb[0]){
                     if(i+1<=floor(n/2) && j+1 > floor(n/2)){
-                        if(vec[i][j]==-1){
+                        if(vec[i][j]==-1 && vec[i][j]!=1){
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
@@ -405,7 +451,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 }
                 if(s_q2 == qb[1]){
                     if(i+1<=floor(n/2) && j +1<= floor(n/2)){
-                        if(vec[i][j]==-1){
+                        if(vec[i][j]==-1 && vec[i][j]!=1){
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
@@ -421,7 +467,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 }
                 if(s_q3 == qb[2]){
                     if(i+1>floor(n/2) && j+1 <= floor(n/2)){
-                        if(vec[i][j]==-1){
+                        if(vec[i][j]==-1 && vec[i][j]!=1){
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
@@ -437,7 +483,7 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 }
                 if(s_q4 == qb[3]){
                     if(i+1>floor(n/2) && j+1 > floor(n/2)){
-                        if(vec[i][j]==-1){
+                        if(vec[i][j]==-1 && vec[i][j]!=1){
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
@@ -486,30 +532,40 @@ int main(){
             for(int i = 0; i<n; i++) saldoColunas[i] = cb[i];
             vector<int> saldoLinhas(n,0);
             for(int i = 0; i<n; i++) saldoLinhas[i] = lb[i];
+            vector<int> saldoDiag(2,0);
+            saldoDiag[0]=db[0];
+            saldoDiag[1]=db[1];
+            vector<int> saldoQuad(4,0);
+            saldoQuad[0]= qb[0];
+            saldoQuad[1]= qb[1];
+            saldoQuad[2]= qb[2];
+            saldoQuad[3]= qb[3];
             vector<vector<int>> vect( n , vector<int> (n,-1));
-            pre_processa(vect,saldoColunas,saldoLinhas);
+            pre_processa(vect,saldoColunas,saldoLinhas, saldoDiag, saldoQuad);
              //for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
              //for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";
-             vecaux2=vect;
+            vecaux2=vect;
             //printValid(vect);
             //vector<int> saldoColunas(n,0);
             //for(int i = 0; i<n; i++) saldoColunas[i] = cb[i];
             vector<int> combination(n);
             int c1=0, c2=0;
-            //for(int i = 0; i<n; i++){if(saldoColunas[i]==1)c1++; if(saldoLinhas[i]==1)c2++;}
-            //for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
-            //cout << endl;
-            //for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";  
-            //cout << endl;  
-            constroiLinhas(n, vect,1,saldoColunas, saldoLinhas);
-            //cout<<aqui<<endl;
-            if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
-            else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
-            else printValid(vecaux);
-            possiveis=0;
-            //cout << contador << endl;
-            cout << cccc << endl;
-            contador = 0;
+            for(int i = 0; i<n; i++){if(saldoColunas[i]>0)c1++; if(saldoLinhas[i]>0)c2++;}
+           // for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
+           // cout << endl;
+           // for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";  
+           // cout << endl; 
+            if(c1 == 0 && c2 == 0) printValid(vect);
+            else{
+                constroiLinhas(n, vect,1,saldoColunas, saldoLinhas);
+                //cout<<aqui<<endl;
+                if (possiveis == 0) cout << "DEFECT: No QR Code generated!" << endl;
+                else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
+                else printValid(vecaux);
+                possiveis=0;
+                //cout << contador << endl;
+                contador = 0;
+            }
         }
     }
     return 0;
