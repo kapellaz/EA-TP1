@@ -337,7 +337,7 @@ int main(){
     int qrcodes;
     cin >> qrcodes;
     while(qrcodes--){
-        if(!leitura() || detetaDefeitos())cout << "DEFECT: No QR Code generated!"<< endl;
+        if(!leitura())cout << "DEFECT: No QR Code generated!"<< endl;
         else{
             vector<int> saldoColunas(n,0);
             vector<int> marcado(n,-1);

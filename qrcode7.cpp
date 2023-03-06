@@ -291,9 +291,11 @@ void constroiLinhas(int n, vector<vector<int>>& vec,int linha,vector<int> &saldo
 
 //acrescenta a linha gerada à matriz e ve se nao da problemas
 void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vector<int> &saldoColunas, vector<int> &saldoLinhas){
+    printValid(vec);
     if(calculaTransicoesLinha(n,combination)==lt[linha-1]){
         vec[linha-1]=combination;
-        if(linha<n && verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas, saldoLinhas);
+        if(linha<n && 
+        verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas, saldoLinhas);
         //if(linha == n) printValid(vec);
         if(linha==n && verifica(vec)==1){
             possiveis++;
@@ -480,7 +482,7 @@ int main(){
     int qrcodes;
     cin >> qrcodes;
     while(qrcodes--){
-        if(!leitura() || detetaDefeitos())cout << "DEFECT: No QR Code generated!"<< endl;
+        if(!leitura())cout << "DEFECT: No QR Code generated!"<< endl;
         else{
             vector<int> saldoColunas(n,0);
             for(int i = 0; i<n; i++) saldoColunas[i] = cb[i];
@@ -507,8 +509,8 @@ int main(){
             else if (possiveis > 1) cout << "INVALID: " << possiveis << " QR Codes generated!" << endl;
             else printValid(vecaux);
             possiveis=0;
-            //cout << contador << endl;
-            cout << cccc << endl;
+            cout << contador << endl;
+            //cout << cccc << endl;
             contador = 0;
         }
     }
