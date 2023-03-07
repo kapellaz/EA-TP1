@@ -53,7 +53,7 @@ bool leitura(){
     if(i>0) return false;
     return true;
 }
-//função para detetar casos com defeitos
+//função para detetar casos com defeitos (não mexer)
 bool detetaDefeitos(){
     int contaPretoCima = 0;
     int contaPretoBaixo = 0;
@@ -101,6 +101,9 @@ bool detetaDefeitos(){
         }
             if((cb[i]*2)<ct[i]) return true;
     }
+    if(db[0]>qb[1]+qb[3]) return true;
+    if(db[1]>qb[0]+qb[2]) return true;
+
     return false;
 }
 
@@ -258,6 +261,8 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
             || ((linha<=floor(n/2) && inicio+1 <= floor(n/2))&& saldoQuad[1]>0) || ((linha>floor(n/2) && inicio+1 <= floor(n/2))&& saldoQuad[2]>0) || ((linha>floor(n/2) && inicio+1 > floor(n/2))&& saldoQuad[3]>0)) 
             && saldoColunas[inicio]>0) {
                 if(linha<=floor(n/2) && inicio+1 > floor(n/2)){
+                    if(linha-1==inicio) saldoDiag[0]--;
+                    if(linha-1==n-inicio-1) saldoDiag[1]--;
                     saldoQuad[0]--;
                     combination[inicio] = 1;
                     saldoColunas[inicio]--;
@@ -265,9 +270,13 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
                     gerador(x-1, linha, inicio+1, fim, combination, vec, saldoColunas,saldoLinhas, saldoQuad, saldoDiag);
                     saldoColunas[inicio]++;
                     saldoLinhas[linha-1]++;
+                    if(linha-1==inicio) saldoDiag[0]++;
+                    if(linha-1==n-inicio-1) saldoDiag[1]++;
                     saldoQuad[0]++;
                     }
                 else if(linha<=floor(n/2) && inicio+1 <= floor(n/2)){
+                    if(linha-1==inicio) saldoDiag[0]--;
+                    if(linha-1==n-inicio-1) saldoDiag[1]--;
                     saldoQuad[1]--;
                     combination[inicio] = 1;
                     saldoColunas[inicio]--;
@@ -276,9 +285,13 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
                     saldoColunas[inicio]++;
                     saldoLinhas[linha-1]++;
                     saldoQuad[1]++;
+                    if(linha-1==inicio) saldoDiag[0]++;
+                    if(linha-1==n-inicio-1) saldoDiag[1]++;
                     }
                 
                 else if(linha>floor(n/2) && inicio+1 <= floor(n/2)){
+                    if(linha-1==inicio) saldoDiag[0]--;
+                    if(linha-1==n-inicio-1) saldoDiag[1]--;
                     saldoQuad[2]--;
                     combination[inicio] = 1;
                     saldoColunas[inicio]--;
@@ -287,8 +300,12 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
                     saldoColunas[inicio]++;
                     saldoLinhas[linha-1]++;
                     saldoQuad[2]++;
+                    if(linha-1==inicio) saldoDiag[0]++;
+                    if(linha-1==n-inicio-1) saldoDiag[1]++;
                 }
                 else if(linha>floor(n/2) && inicio+1 > floor(n/2)){
+                    if(linha-1==inicio) saldoDiag[0]--;
+                    if(linha-1==n-inicio-1) saldoDiag[1]--;
                     saldoQuad[3]--;
                     combination[inicio] = 1;
                     saldoColunas[inicio]--;
@@ -297,6 +314,8 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
                     saldoColunas[inicio]++;
                     saldoLinhas[linha-1]++;
                     saldoQuad[3]++;
+                    if(linha-1==inicio) saldoDiag[0]++;
+                    if(linha-1==n-inicio-1) saldoDiag[1]++;
                 }
             }
             
@@ -307,12 +326,14 @@ void gerador(int x, int linha, int inicio, int fim, vector<int> &combination,vec
         }
     }
 }
-
+void pre_processa2( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<int> &saldoLinhas,vector<int> &saldoDiag,vector<int> &saldoQuad);
 vector<vector<int>> vecaux3;
 //gera uma linha inteira
 void constroiLinhas(int n, vector<vector<int>>& vec,int linha,vector<int> &saldoColunas, vector<int> &saldoLinhas,vector<int> &saldoQuad, vector<int> &saldoDiag){
     vector<int> combination(n,0);
     if(saldoLinhas[linha-1]==0 && linha!=n) {
+        pre_processa2(vec, saldoColunas, saldoLinhas, saldoQuad, saldoDiag);
+       // printValid(vec);
         constroiLinhas(n, vec, linha+1, saldoColunas, saldoLinhas, saldoQuad, saldoDiag);
     }
     else if(saldoLinhas[linha-1]==0 && linha==n){
@@ -332,13 +353,120 @@ void buildMatrix(int linha,vector<int> &combination,vector<vector<int>>& vec,vec
     //printValid(vec);
     if(calculaTransicoesLinha(n,combination)==lt[linha-1]){
         vec[linha-1]=combination;
-        if(linha<n && verificaUntil(vec,linha,n)==1) constroiLinhas(n,vec,linha+1,saldoColunas, saldoLinhas,saldoQuad, saldoDiag);
+        if(linha<n && verificaUntil(vec,linha,n)==1) {
+            //pre_processa(vec, saldoColunas,saldoLinhas, saldoDiag, saldoQuad);
+            constroiLinhas(n,vec,linha+1,saldoColunas, saldoLinhas,saldoQuad, saldoDiag);}
+
         else if(linha==n && verifica(vec)==1){
             possiveis++;
             vecaux=vec;
+            //for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
+            //cout << endl;
+            //for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";  
+            //cout << endl;
+            //for(int i = 0; i<4; i++) cout<< saldoQuad[i]<<"\t";
+            //cout << endl;
+            //for(int i = 0; i<2; i++) cout<< saldoDiag[i]<<"\t";  
+            //cout << endl;
         }else{
             vec[linha-1]=vecaux2[linha-1];
         }
+    }
+}
+
+void pre_processa2( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<int> &saldoLinhas,vector<int> &saldoDiag,vector<int> &saldoQuad){
+    //numero de linhas que faltam preencher     
+    int k = n;
+    //numero de colunas que faltam preencher
+    int y = n;
+    //numero maximo de celulas pretas por quadrante
+    int s = floor(n/2);
+    int s_q1, s_q2, s_q3, s_q4;
+    if(n%2!=0){
+        s_q1= s*(s+1);
+        s_q2=s*s;
+        s_q3=s*(s+1);
+        s_q4=(s+1)*(s+1);
+    }else{
+        s_q1= s*s;
+        s_q2=s*s;
+        s_q3=s*s;
+        s_q4=s*s; 
+    }
+    vector<int> preto(n,1);
+      
+    for(int i = 0; i<n; i++){
+        //caso o saldo de celulas pretas da linha seja 0. Preenche as restantes celulas a branco
+        if(saldoLinhas[i]==0){
+            for(int j = 0; j<n; j++){
+                if(vec[i][j]==-1){
+                    vec[i][j]=0;
+                }
+            }
+        }
+        //caso o saldo de celulas pretas da coluna seja 0. Preenche as restantes celulas a branco
+        if(saldoColunas[i]==0){
+            for(int j = 0; j<n; j++){
+                if(vec[j][i]==-1){
+                    vec[j][i]=0;
+                }
+            }
+        }
+        if(saldoDiag[0] == 0){
+            if(vec[i][i] == -1){
+                vec[i][i] = 0;
+            }
+        }
+        if(saldoDiag[1] == 0){
+            if(vec[i][n-i-1] == -1){
+                vec[i][n-i-1] = 0;
+            }
+        }
+    }
+    if(saldoQuad[0] == 0){
+        for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                 if(i+1<=floor(n/2) && j+1 > floor(n/2)){
+                    if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                 }
+            }
+        }
+    }
+    if(saldoQuad[1] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                 if(i+1<=floor(n/2) && j +1<= floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                 }
+               
+    }
+        }
+    }
+    if(saldoQuad[2] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                if(i+1>floor(n/2) && j+1 <= floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                }
+            }
+         }
+    }
+    if(saldoQuad[3] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                if(i+1>floor(n/2) && j+1 > floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                }
+        }
+         }
     }
 }
 
@@ -349,83 +477,47 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
     int y = n;
     //numero maximo de celulas pretas por quadrante
     int s = floor(n/2);
-    int s_q1= s*(s+1);
-    int s_q2=s*s;
-    int s_q3=s*(s+1);
-    int s_q4=(s+1)*(s+1);
+    int s_q1, s_q2, s_q3, s_q4;
+    if(n%2!=0){
+        s_q1= s*(s+1);
+        s_q2=s*s;
+        s_q3=s*(s+1);
+        s_q4=(s+1)*(s+1);
+    }else{
+        s_q1= s*s;
+        s_q2=s*s;
+        s_q3=s*s;
+        s_q4=s*s; 
+    }
     vector<int> preto(n,1);
 
     // linhas com uma transição -> numero de celulas pretas maximo(n) ou minimo 1
-    for(int i = 0;i<n;++i){
-        //linha com 1 transição e uma celula preta -> só pode ter preto no inicio ou no fim, coloca a branco as celulas do meio
-        if(lb[i]==1 && lt[i]==1){
-            for(int p = 1; p<n-1; p++) vec[i][p]=0;
-        }
-        //linha com 2 transições e n-1 celulas pretas (1 celula branca) -> as celulas das pontas tem que ser pretas
-        if(lt[i]==2 && lb[i]==n-1) {
-            if(vec[i][0]==-1){
-                vec[i][0]=1;
-                saldoLinhas[i]--;
-                saldoColunas[0]--;
-            }
-            if(vec[i][n-1]==-1){
-                vec[i][n-1]=1;
-                saldoLinhas[i]--;
-                saldoColunas[n-1]--;
-            }
-        }
-        //linha com 1 transição e n-1 celulas pretas (1 celula branca) -> só pode ter branco no inicio ou no fim, colocar a preto as celulas do meio
-        if(lt[i]==1 && lb[i]==n-1) {
-            for(int p = 1; p<n-1; p++){
-                if(vec[i][p]==-1){
-                    vec[i][p] =1;
-                    saldoColunas[p]--; 
-                    saldoLinhas[i]--;
-                }
-
-            }
-        }
-        //coluna com 1 transição e 1 celula preta (n-1 celulas pretas) -> as celulas das pontas tem que ser pretas, coloca as celulas do meio a brancas
-        if(cb[i]== 1 && ct[i]==1){
-            for(int p = 1; p<n-1; p++) vec[p][i]=0;
-        }
-        ////coluna com 2 transições e n-1 celulas pretas (1 celula branca) -> as celulas das pontas são pretas
-        if(ct[i]==2 && cb[i]==n-1) {
-            if(vec[0][i]==-1){
-                vec[0][i]=1;
-                saldoLinhas[0]--;
-                saldoColunas[i]--;
-            }
-            if(vec[n-1][i]==-1){
-                vec[n-1][i]=1;
-                saldoLinhas[n-1]--;
-                saldoColunas[i]--;
-            }
-        }
-         //coluna com 1 transição e n-1 celulas pretas (1 celula branca) -> só pode ter branco no inicio ou no fim, colocar a preto as celulas do meio
-        if(ct[i]==1 && cb[i]==n-1) {
-            for(int p = 1; p<n-1; p++){
-                if(vec[p][i]==-1){
-                    vec[p][i] =1;
-                    saldoColunas[i]--; 
-                    saldoLinhas[p]--;
-                    if(p == i){
-                        saldoDiag[0]--;
-                    }
-                }
-
-            }
-        }
+    for(int i = 0;i<n;++i){ 
         //linha toda preenchida de preto
         if(lb[i]== n){
             vector<int> black(n,1);
             for(int y = 0;y<n;y++){
-                if(vec[i][y]==-1)
+                if(vec[i][y]==-1){
                     saldoColunas[y]--;
+                    if(i == y){
+                        saldoDiag[0]--;
+                    }
+                    if(i == n-y-1){
+                        saldoDiag[1]--;
+                    }
+            }
             }
             vec[i] = black;
             saldoLinhas[i] = 0;
         }
+
+        //linha toda preenchida de branco
+        if(lb[i]==0){
+                k--;
+                vector<int> white(n,0);
+                vec[i] = white;
+        }
+
         //coluna toda preenchida de preto
         if(cb[i] == n)
         {   
@@ -433,15 +525,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                     if(vec[x][i] == -1){
                         vec[x][i] = 1;
                         saldoLinhas[x]--;
+                        if(x == i){
+                            saldoDiag[0]--;
+                        }
+                        
+                        if(i == n-x-1){
+                            saldoDiag[1]--;
+                        }
                     }       
             }  
             saldoColunas[i] = 0;
-        }
-        //linha toda preenchida de branco
-        if(lb[i]==0){
-                k--;
-                vector<int> white(n,0);
-                vec[i] = white;
         }
 
         //coluna toda preenchida de branco
@@ -461,6 +554,12 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 if(vec[j][i]==-1 && vec[j][i]!=1){
                     saldoLinhas[j]--;
                     vec[j][i]=1;
+                    if(i == j){
+                        saldoDiag[0]--;
+                    }
+                    if(i == n-j-1){
+                        saldoDiag[1]--;
+                    }
                 }
             }
             saldoColunas[i]=0;
@@ -473,6 +572,12 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 if(vec[i][j]==-1 && vec[i][j]!=1){
                     saldoColunas[j]--;
                     vec[i][j]=1;
+                    if(i == j){
+                        saldoDiag[0]--;
+                    }
+                    if(i == n-j-1){
+                        saldoDiag[1]--;
+                    }
                 }
             }
             saldoLinhas[i]=0;
@@ -488,6 +593,8 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                     vec[i][i]=1;
                     saldoColunas[i]--;
                     saldoLinhas[i]--;
+                    saldoDiag[0]=0;
+                    if(i == n-i-1) saldoDiag[1]--;
                 }
             }
             //diagonal só com celulas a branco
@@ -502,6 +609,8 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                     vec[i][n-i-1]=1;
                     saldoColunas[n-i-1]--;
                     saldoLinhas[i]--;
+                    saldoDiag[1]=0;
+                    if(i == n-i-1) saldoDiag[0]--;
                 }
             }
             //antidiagonal só com celulas brancas
@@ -519,6 +628,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
+                            if(i == j && i == n-j-1){
+                                saldoDiag[0]--;
+                                saldoDiag[1]--;
+                            }
+                            else if(i == j){
+                                saldoDiag[0]--;
+                            }
+                            else if(i == n-j-1){
+                                saldoDiag[1]--;
+                            }
                         }
                     }
                 }
@@ -537,6 +656,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
+                            if(i == j && i == n-j-1){
+                                saldoDiag[0]--;
+                                saldoDiag[1]--;
+                            }
+                            else if(i == j){
+                                saldoDiag[0]--;
+                            }
+                            else if(i == n-j-1){
+                                saldoDiag[1]--;
+                            }
                         }
                     }
                 }
@@ -555,6 +684,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
+                            if(i == j && i == n-j-1){
+                                saldoDiag[0]--;
+                                saldoDiag[1]--;
+                            }
+                            else if(i == j){
+                                saldoDiag[0]--;
+                            }
+                            else if(i == n-j-1){
+                                saldoDiag[1]--;
+                            }
                         }
                     }
                 }
@@ -573,6 +712,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                             vec[i][j] = 1;
                             saldoColunas[j]--;
                             saldoLinhas[i]--;
+                            if(i == j && i == n-j-1){
+                                saldoDiag[0]--;
+                                saldoDiag[1]--;
+                            }
+                            else if(i == j){
+                                saldoDiag[0]--;
+                            }
+                            else if(i == n-j-1){
+                                saldoDiag[1]--;
+                            }
                         }
                     }
                 }
@@ -587,6 +736,101 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
             }
         }
     }
+    for(int i = 0; i<n; i++){
+        if(lb[i]==1 && lt[i]==1){
+            for(int p = 1; p<n-1; p++) vec[i][p]=0;
+        }
+        //linha com 2 transições e n-1 celulas pretas (1 celula branca) -> as celulas das pontas tem que ser pretas
+        if(lt[i]==2 && lb[i]==n-1) {
+            if(vec[i][0]==-1){
+                vec[i][0]=1;
+                saldoLinhas[i]--;
+                saldoColunas[0]--;
+                if(i == 0){
+                    saldoDiag[0]--;
+                }
+                if(i == n-1){
+                    saldoDiag[1]--;
+                }
+            }
+            if(vec[i][n-1]==-1){
+                vec[i][n-1]=1;
+                if(i == n-1){
+                    saldoDiag[0]--;
+                }
+                if(i == 0){
+                    saldoDiag[1]--;
+                }
+                saldoLinhas[i]--;
+                saldoColunas[n-1]--;
+            }
+        }
+        //linha com 1 transição e n-1 celulas pretas (1 celula branca) -> só pode ter branco no inicio ou no fim, colocar a preto as celulas do meio
+        if(lt[i]==1 && lb[i]==n-1) {
+            for(int p = 1; p<n-1; p++){
+                if(vec[i][p]==-1){
+                    vec[i][p] =1;
+                    if( i == p){
+                        saldoDiag[0]--;
+                    }
+                    if( i == n-p-1){
+                        saldoDiag[1]--;
+                    }
+                    saldoColunas[p]--; 
+                    saldoLinhas[i]--;
+                }
+
+            }
+        }
+        //coluna com 1 transição e 1 celula preta (n-1 celulas pretas) -> as celulas das pontas tem que ser pretas, coloca as celulas do meio a brancas
+        if(cb[i]== 1 && ct[i]==1){
+            for(int p = 1; p<n-1; p++) vec[p][i]=0;
+        }
+        ////coluna com 2 transições e n-1 celulas pretas (1 celula branca) -> as celulas das pontas são pretas
+        if(ct[i]==2 && cb[i]==n-1) {
+            if(vec[0][i]==-1){
+                vec[0][i]=1;
+                saldoLinhas[0]--;
+                saldoColunas[i]--;
+                if(i == 0){
+                    saldoDiag[0]--;
+                }
+                if(i == n-1){
+                    saldoDiag[1]--;
+                }
+            }
+            if(vec[n-1][i]==-1){
+                vec[n-1][i]=1;
+                saldoLinhas[n-1]--;
+                saldoColunas[i]--;
+                if(i == n-1){
+                    saldoDiag[0]--;
+                }
+                
+                if(i == 0){
+                    saldoDiag[1]--;
+                }
+            }
+        }
+         //coluna com 1 transição e n-1 celulas pretas (1 celula branca) -> só pode ter branco no inicio ou no fim, colocar a preto as celulas do meio
+        if(ct[i]==1 && cb[i]==n-1) {
+            for(int p = 1; p<n-1; p++){
+                if(vec[p][i]==-1){
+                    vec[p][i] =1;
+                    saldoColunas[i]--; 
+                    saldoLinhas[p]--;
+                    if(p == i){
+                        saldoDiag[0]--;
+                    }
+                    if(i == n-p-1){
+                        saldoDiag[1]--;
+                    }
+                }
+
+            }
+        }
+    }
+
 
     for(int i = 0; i<n; i++){
         //caso o saldo de celulas pretas da linha seja 0. Preenche as restantes celulas a branco
@@ -605,6 +849,16 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
                 }
             }
         }
+        if(saldoDiag[0] == 0){
+            if(vec[i][i] == -1){
+                vec[i][i] = 0;
+            }
+        }
+        if(saldoDiag[1] == 0){
+            if(vec[i][n-i-1] == -1){
+                vec[i][n-i-1] = 0;
+            }
+        }
     }
 
     //calculo do saldo das diagonais e dos quadrantes 
@@ -617,8 +871,8 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
 
     for(int i = 0; i<n; i++){
         estadoAtual=vec[0][i];
-        if(vec[i][i]==1) conta1++;
-        if(vec[i][n-i-1]==1) conta2++;
+        //if(vec[i][i]==1) conta1++;
+        //if(vec[i][n-i-1]==1) conta2++;
         for(int j = 0; j<n; j++){
             if(vec[i][j]==1){
                 if(i+1<=floor(n/2) && j+1 > floor(n/2)) q1++;
@@ -628,12 +882,58 @@ void pre_processa( vector<vector<int>> &vec,vector<int> &saldoColunas, vector<in
             }
         }
     }
-    saldoDiag[0] = db[0]-conta1;
-    saldoDiag[1] = db[1]-conta2;
+    //saldoDiag[0] = db[0]-conta1;
+    //saldoDiag[1] = db[1]-conta2;
     saldoQuad[0] = qb[0]-q1;
     saldoQuad[1] = qb[1]-q2;
     saldoQuad[2] = qb[2]-q3;
     saldoQuad[3] = qb[3]-q4;
+
+    if(saldoQuad[0] == 0){
+        for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                 if(i+1<=floor(n/2) && j+1 > floor(n/2)){
+                    if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                 }
+            }
+        }
+    }
+    if(saldoQuad[1] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                 if(i+1<=floor(n/2) && j +1<= floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                 }
+               
+    }
+        }
+    }
+    if(saldoQuad[2] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                if(i+1>floor(n/2) && j+1 <= floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                }
+            }
+         }
+    }
+    if(saldoQuad[3] == 0){
+         for(int i = 0;i<n;i++){
+            for(int j = 0;j<n;j++){
+                if(i+1>floor(n/2) && j+1 > floor(n/2)){
+                     if(vec[i][j]==-1){
+                        vec[i][j] = 0;
+                    }
+                }
+        }
+         }
+    }
 }
        
            
@@ -643,8 +943,6 @@ int main(){
     cin.tie(0);
     int qrcodes;
     cin >> qrcodes;
-    struct timeval start, end;
-    gettimeofday(&start, NULL);
     while(qrcodes--){
         if(!leitura()||detetaDefeitos())cout << "DEFECT: No QR Code generated!"<< endl;
         else{
@@ -667,11 +965,22 @@ int main(){
             saldoQuad[3]= qb[3];
 
             //incialização da matriz com tudo a -1
-            vector<vector<int>> vect( n , vector<int> (n,-1));
+            vector <vector<int>> vect( n , vector<int> (n,-1));
 
             //preprocessamento da matriz
             pre_processa(vect,saldoColunas,saldoLinhas, saldoDiag, saldoQuad);
-            printValid(vect);
+            pre_processa2(vect,saldoColunas,saldoLinhas, saldoDiag, saldoQuad);
+            //printValid(vect);
+                        //int c1=0, c2=0;
+            //or(int i = 0; i<n; i++){if(saldoColunas[i]>0)c1++; if(saldoLinhas[i]>0)c2++;}
+            //for(int i = 0; i<n; i++) cout<< saldoLinhas[i]<<"\t";
+            //cout << endl;
+            //for(int i = 0; i<n; i++) cout<< saldoColunas[i]<<"\t";  
+            ////cout << endl;
+            //for(int i = 0; i<4; i++) cout<< saldoQuad[i]<<"\t";
+            //cout << endl;
+            //for(int i = 0; i<2; i++) cout<< saldoDiag[i]<<"\t";  
+            ////cout << endl;
             if(saldoColunas == branco && saldoLinhas == branco && saldoQuad == quad){
                 possiveis+=1;
                 vecaux = vect;
@@ -689,16 +998,6 @@ int main(){
             possiveis=0;
         }
     }
-    // Calculating total time taken by the program.
-    double time_taken;
-  
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - 
-                              start.tv_usec)) * 1e-6;
-  
-    cout << "Time taken by program is : " << fixed
-         << time_taken << setprecision(6);
-    cout << " sec" << endl;
     return 0;
     
 }
